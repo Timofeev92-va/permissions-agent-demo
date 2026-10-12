@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ru">
+<!--
+  Экран: Список сотрудников
+  Таблица всех сотрудников с прогресс-баром готовности документации,
+  фильтрами по проекту и статусу, поиском и кнопкой добавления нового сотрудника.
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PermitFlow — Сотрудники</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .nav-link { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; font-size:14px; font-weight:500; color:#94a3b8; transition:all .15s; text-decoration:none; }
+    .nav-link:hover { background:rgba(255,255,255,.08); color:#fff; }
+    .nav-link.active { background:rgba(255,255,255,.13); color:#fff; }
+    .nav-link.active i { color:#f97316; }
+    .filter-btn { padding:6px 14px; border-radius:6px; font-size:13px; font-weight:500; border:1px solid #e2e8f0; background:#fff; color:#475569; cursor:pointer; transition:all .15s; }
+    .filter-btn.active { background:#1e3a6e; color:#fff; border-color:#1e3a6e; }
+    .filter-btn:hover:not(.active) { background:#f8fafc; }
+    .progress-track { background:#e2e8f0; border-radius:999px; height:6px; overflow:hidden; }
+    .progress-fill { height:100%; border-radius:999px; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="w-60 bg-[#0d1f3c] text-white flex flex-col min-h-screen fixed left-0 top-0 z-40">
+    <div class="px-5 py-5 border-b border-white/10">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+          <i class="fa-solid fa-file-shield text-white text-sm"></i>
+        </div>
+        <span class="text-[17px] font-bold tracking-tight">PermitFlow</span>
+      </div>
+      <p class="text-[11px] text-slate-400 mt-1.5 leading-tight">ООО «ПермитФлоу Сервис»</p>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-0.5">
+      <a href="dashboard.html" class="nav-link">
+        <i class="fa-solid fa-gauge w-4 text-center"></i> Дашборд
+      </a>
+      <a href="employees.html" class="nav-link active">
+        <i class="fa-solid fa-users w-4 text-center"></i> Сотрудники
+      </a>
+      <a href="upload.html" class="nav-link">
+        <i class="fa-solid fa-cloud-arrow-up w-4 text-center"></i> Загрузка документов
+      </a>
+      <a href="archive.html" class="nav-link">
+        <i class="fa-solid fa-box-archive w-4 text-center"></i> Архивы
+      </a>
+      <div class="pt-3 mt-3 border-t border-white/10">
+        <a href="#" class="nav-link">
+          <i class="fa-solid fa-gear w-4 text-center"></i> Настройки
+        </a>
+      </div>
+    </nav>
+    <div class="px-4 py-4 border-t border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">КА</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-white truncate">Козлова А.П.</p>
+          <p class="text-[11px] text-slate-400">Специалист по документам</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="ml-60 flex-1 p-8">
+
+    <!-- Header -->
+    <div class="flex items-start justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-800">Сотрудники</h1>
+        <p class="text-sm text-slate-500 mt-1">Всего 42 сотрудника · 3 объекта</p>
+      </div>
+      <button class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors shadow-sm">
+        <i class="fa-solid fa-plus text-xs"></i> Добавить сотрудника
+      </button>
+    </div>
+
+    <!-- Filters & Search -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4 mb-5">
+      <div class="flex items-center gap-4 flex-wrap">
+        <!-- Search -->
+        <div class="relative flex-1 min-w-48">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+          <input type="text" placeholder="Поиск по ФИО..." class="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+        </div>
+
+        <!-- Project filter -->
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1">Проект:</span>
+          <button class="filter-btn active">Все</button>
+          <button class="filter-btn">Проект «Северный» (участок Восточный)</button>
+          <button class="filter-btn">Проект «Северный» (участок Западный)</button>
+          <button class="filter-btn">Проект «Южный»</button>
+          <button class="filter-btn">РН-СМНГ</button>
+        </div>
+
+        <div class="w-px h-6 bg-slate-200"></div>
+
+        <!-- Status filter -->
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide mr-1">Статус:</span>
+          <button class="filter-btn active">Все</button>
+          <button class="filter-btn">Готовы</button>
+          <button class="filter-btn">Есть проблемы</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <table class="w-full">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200">
+            <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">ФИО</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Должность</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Объект / Проект</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide w-48">Готовность</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Документы</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Действия</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+
+          <!-- Grigorenko -->
+          <tr class="hover:bg-slate-50/70 transition-colors">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span class="text-[11px] font-bold text-red-700">ГД</span>
+                </div>
+                <div>
+                  <a href="employee_detail.html" class="text-sm font-semibold text-slate-800 hover:text-blue-600">Иванов Иван Иванович</a>
+                  <p class="text-[11px] text-slate-400">Таб. № 00147</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">Механик по ремонту скважин</td>
+            <td class="px-4 py-3.5">
+              <span class="text-sm text-slate-700">Проект «Северный» (участок Восточный)</span>
+              <p class="text-[11px] text-slate-400">АО СМНГ-Шельф</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-2">
+                <div class="progress-track flex-1"><div class="progress-fill bg-red-400" style="width:67%"></div></div>
+                <span class="text-xs font-semibold text-red-600 w-8 text-right">67%</span>
+              </div>
+              <p class="text-[10px] text-red-500 mt-0.5">2 просроч. · 1 истекает</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <div class="flex gap-1 flex-wrap">
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-red-100 text-red-700">❌ 2</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700">⚠️ 1</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600">❓ 1</span>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <a href="employee_detail.html" class="text-xs text-blue-600 hover:text-blue-800 font-medium px-3 py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">Открыть</a>
+                <a href="archive.html" class="text-xs text-slate-600 hover:text-slate-800 font-medium px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Архив</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Chaliy -->
+          <tr class="hover:bg-slate-50/70 transition-colors">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span class="text-[11px] font-bold text-amber-700">ЧА</span>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-800">Петров Пётр Петрович</p>
+                  <p class="text-[11px] text-slate-400">Таб. № 00152</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">Инженер по КВД</td>
+            <td class="px-4 py-3.5">
+              <span class="text-sm text-slate-700">Проект «Северный» (участок Восточный)</span>
+              <p class="text-[11px] text-slate-400">АО СМНГ-Шельф</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-2">
+                <div class="progress-track flex-1"><div class="progress-fill bg-amber-400" style="width:83%"></div></div>
+                <span class="text-xs font-semibold text-amber-600 w-8 text-right">83%</span>
+              </div>
+              <p class="text-[10px] text-amber-600 mt-0.5">1 истекает · 1 отсутствует</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <div class="flex gap-1 flex-wrap">
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700">⚠️ 1</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600">❓ 1</span>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <a href="#" class="text-xs text-blue-600 hover:text-blue-800 font-medium px-3 py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">Открыть</a>
+                <a href="archive.html" class="text-xs text-slate-600 hover:text-slate-800 font-medium px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Архив</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Petrov -->
+          <tr class="hover:bg-slate-50/70 transition-colors">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span class="text-[11px] font-bold text-green-700">ПС</span>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-800">Петров Сергей Иванович</p>
+                  <p class="text-[11px] text-slate-400">Таб. № 00089</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">Мастер по ремонту скважин</td>
+            <td class="px-4 py-3.5">
+              <span class="text-sm text-slate-700">Проект «Южный»</span>
+              <p class="text-[11px] text-slate-400">ООО «ЮжШельфЭнерджи»</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-2">
+                <div class="progress-track flex-1"><div class="progress-fill bg-green-500" style="width:100%"></div></div>
+                <span class="text-xs font-semibold text-green-600 w-8 text-right">100%</span>
+              </div>
+              <p class="text-[10px] text-green-600 mt-0.5">Все документы в порядке</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-green-100 text-green-700">✅ Готов к выезду</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <a href="#" class="text-xs text-blue-600 hover:text-blue-800 font-medium px-3 py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">Открыть</a>
+                <a href="archive.html" class="text-xs text-slate-600 hover:text-slate-800 font-medium px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Архив</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Ivanov -->
+          <tr class="hover:bg-slate-50/70 transition-colors">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span class="text-[11px] font-bold text-amber-700">ИА</span>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-800">Иванов Алексей Александрович</p>
+                  <p class="text-[11px] text-slate-400">Таб. № 00203</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">Инженер по ОТиПБ</td>
+            <td class="px-4 py-3.5">
+              <span class="text-sm text-slate-700">Проект «Северный» (участок Западный)</span>
+              <p class="text-[11px] text-slate-400">АО СМНГ-Шельф</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-2">
+                <div class="progress-track flex-1"><div class="progress-fill bg-amber-400" style="width:75%"></div></div>
+                <span class="text-xs font-semibold text-amber-600 w-8 text-right">75%</span>
+              </div>
+              <p class="text-[10px] text-amber-600 mt-0.5">1 истекает · 2 отсутствуют</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <div class="flex gap-1 flex-wrap">
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700">⚠️ 1</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600">❓ 2</span>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <a href="#" class="text-xs text-blue-600 hover:text-blue-800 font-medium px-3 py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">Открыть</a>
+                <a href="archive.html" class="text-xs text-slate-600 hover:text-slate-800 font-medium px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Архив</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Kozlov -->
+          <tr class="hover:bg-slate-50/70 transition-colors">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span class="text-[11px] font-bold text-red-700">КМ</span>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-800">Козлов Михаил Владимирович</p>
+                  <p class="text-[11px] text-slate-400">Таб. № 00311</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">Технолог по добыче нефти</td>
+            <td class="px-4 py-3.5">
+              <span class="text-sm text-slate-700">ОсновнойЗаказчик-Нефтегаз</span>
+              <p class="text-[11px] text-slate-400">ПАО «НК «Роснефть»</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-2">
+                <div class="progress-track flex-1"><div class="progress-fill bg-red-500" style="width:42%"></div></div>
+                <span class="text-xs font-semibold text-red-600 w-8 text-right">42%</span>
+              </div>
+              <p class="text-[10px] text-red-500 mt-0.5">Критично: 3 отсутствуют</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <div class="flex gap-1 flex-wrap">
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-red-100 text-red-700">❌ 1</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600">❓ 3</span>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <a href="#" class="text-xs text-blue-600 hover:text-blue-800 font-medium px-3 py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">Открыть</a>
+                <a href="archive.html" class="text-xs text-slate-600 hover:text-slate-800 font-medium px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Архив</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Stepanova -->
+          <tr class="hover:bg-slate-50/70 transition-colors">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span class="text-[11px] font-bold text-green-700">СН</span>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-800">Степанова Наталья Сергеевна</p>
+                  <p class="text-[11px] text-slate-400">Таб. № 00178</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">Инженер по бурению</td>
+            <td class="px-4 py-3.5">
+              <span class="text-sm text-slate-700">Проект «Южный»</span>
+              <p class="text-[11px] text-slate-400">ООО «ЮжШельфЭнерджи»</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-2">
+                <div class="progress-track flex-1"><div class="progress-fill bg-green-400" style="width:91%"></div></div>
+                <span class="text-xs font-semibold text-green-600 w-8 text-right">91%</span>
+              </div>
+              <p class="text-[10px] text-amber-600 mt-0.5">1 истекает через 30 дней</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700">⚠️ 1</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <a href="#" class="text-xs text-blue-600 hover:text-blue-800 font-medium px-3 py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">Открыть</a>
+                <a href="archive.html" class="text-xs text-slate-600 hover:text-slate-800 font-medium px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Архив</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Ryabov -->
+          <tr class="hover:bg-slate-50/70 transition-colors">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span class="text-[11px] font-bold text-red-700">РЕ</span>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-800">Сидоров Семён Сергеевич</p>
+                  <p class="text-[11px] text-slate-400">Таб. № 00355</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">Инженер по бурению скважин</td>
+            <td class="px-4 py-3.5">
+              <span class="text-sm text-slate-700">Проект «Северный» (участок Восточный)</span>
+              <p class="text-[11px] text-slate-400">АО СМНГ-Шельф</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-2">
+                <div class="progress-track flex-1"><div class="progress-fill bg-red-400" style="width:58%"></div></div>
+                <span class="text-xs font-semibold text-red-600 w-8 text-right">58%</span>
+              </div>
+              <p class="text-[10px] text-red-500 mt-0.5">1 истекает · 2 отсутствуют</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <div class="flex gap-1 flex-wrap">
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-700">⚠️ 1</span>
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-100 text-slate-600">❓ 2</span>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <a href="#" class="text-xs text-blue-600 hover:text-blue-800 font-medium px-3 py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">Открыть</a>
+                <a href="archive.html" class="text-xs text-slate-600 hover:text-slate-800 font-medium px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Архив</a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Zaitsev -->
+          <tr class="hover:bg-slate-50/70 transition-colors">
+            <td class="px-5 py-3.5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span class="text-[11px] font-bold text-green-700">ЗВ</span>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-slate-800">Зайцев Вадим Олегович</p>
+                  <p class="text-[11px] text-slate-400">Таб. № 00122</p>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">Мастер-технолог</td>
+            <td class="px-4 py-3.5">
+              <span class="text-sm text-slate-700">Проект «Северный» (участок Западный)</span>
+              <p class="text-[11px] text-slate-400">АО СМНГ-Шельф</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <div class="flex items-center gap-2">
+                <div class="progress-track flex-1"><div class="progress-fill bg-green-500" style="width:100%"></div></div>
+                <span class="text-xs font-semibold text-green-600 w-8 text-right">100%</span>
+              </div>
+              <p class="text-[10px] text-green-600 mt-0.5">Все документы в порядке</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full bg-green-100 text-green-700">✅ Готов к выезду</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <a href="#" class="text-xs text-blue-600 hover:text-blue-800 font-medium px-3 py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">Открыть</a>
+                <a href="archive.html" class="text-xs text-slate-600 hover:text-slate-800 font-medium px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Архив</a>
+              </div>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="px-5 py-3.5 border-t border-slate-100 flex items-center justify-between">
+        <p class="text-sm text-slate-500">Показано 8 из 42 сотрудников</p>
+        <div class="flex items-center gap-1">
+          <button class="px-3 py-1.5 text-sm text-slate-400 border border-slate-200 rounded-lg hover:bg-slate-50">‹ Назад</button>
+          <button class="px-3 py-1.5 text-sm text-white bg-[#1e3a6e] border border-[#1e3a6e] rounded-lg">1</button>
+          <button class="px-3 py-1.5 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">2</button>
+          <button class="px-3 py-1.5 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">3</button>
+          <button class="px-3 py-1.5 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Вперёд ›</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</body>
+</html>

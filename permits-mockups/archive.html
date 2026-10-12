@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ru">
+<!--
+  Экран: Формирование архива для заказчика
+  Выбор проекта, чекбокс-список сотрудников с индикатором готовности,
+  предпросмотр содержимого архива (что войдёт / чего не хватает), пароль и скачивание ZIP.
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PermitFlow — Формирование архива</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .nav-link { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; font-size:14px; font-weight:500; color:#94a3b8; transition:all .15s; text-decoration:none; }
+    .nav-link:hover { background:rgba(255,255,255,.08); color:#fff; }
+    .nav-link.active { background:rgba(255,255,255,.13); color:#fff; }
+    .nav-link.active i { color:#f97316; }
+    .emp-row { display:flex; align-items:center; gap:12px; padding:10px 14px; border-radius:8px; cursor:pointer; transition:background .12s; }
+    .emp-row:hover { background:#f8fafc; }
+    .emp-row.selected { background:#eff6ff; }
+    .emp-row input[type=checkbox] { accent-color: #1d4ed8; width:15px; height:15px; flex-shrink:0; cursor:pointer; }
+    .progress-mini { height:4px; border-radius:99px; background:#e2e8f0; overflow:hidden; }
+    .progress-fill { height:100%; border-radius:99px; }
+    .doc-row-ok    { background:#f0fdf4; border-left:3px solid #22c55e; }
+    .doc-row-warn  { background:#fffbeb; border-left:3px solid #f59e0b; }
+    .doc-row-err   { background:#fef2f2; border-left:3px solid #ef4444; }
+    .doc-row-miss  { background:#f8fafc; border-left:3px solid #94a3b8; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="w-60 bg-[#0d1f3c] text-white flex flex-col min-h-screen fixed left-0 top-0 z-40">
+    <div class="px-5 py-5 border-b border-white/10">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+          <i class="fa-solid fa-file-shield text-white text-sm"></i>
+        </div>
+        <span class="text-[17px] font-bold tracking-tight">PermitFlow</span>
+      </div>
+      <p class="text-[11px] text-slate-400 mt-1.5 leading-tight">ООО «ПермитФлоу Сервис»</p>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-0.5">
+      <a href="dashboard.html" class="nav-link">
+        <i class="fa-solid fa-gauge w-4 text-center"></i> Дашборд
+      </a>
+      <a href="employees.html" class="nav-link">
+        <i class="fa-solid fa-users w-4 text-center"></i> Сотрудники
+      </a>
+      <a href="upload.html" class="nav-link">
+        <i class="fa-solid fa-cloud-arrow-up w-4 text-center"></i> Загрузка документов
+      </a>
+      <a href="archive.html" class="nav-link active">
+        <i class="fa-solid fa-box-archive w-4 text-center"></i> Архивы
+      </a>
+      <div class="pt-3 mt-3 border-t border-white/10">
+        <a href="#" class="nav-link">
+          <i class="fa-solid fa-gear w-4 text-center"></i> Настройки
+        </a>
+      </div>
+    </nav>
+    <div class="px-4 py-4 border-t border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">КА</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-white truncate">Козлова А.П.</p>
+          <p class="text-[11px] text-slate-400">Специалист по документам</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="ml-60 flex-1 p-8">
+
+    <!-- Header -->
+    <div class="flex items-center gap-2 text-sm text-slate-400 mb-2">
+      <a href="dashboard.html" class="hover:text-slate-600">Дашборд</a>
+      <i class="fa-solid fa-chevron-right text-[10px]"></i>
+      <span class="text-slate-700 font-medium">Формирование архива</span>
+    </div>
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold text-slate-800">Формирование архива</h1>
+      <p class="text-sm text-slate-500 mt-1">Выберите проект, сотрудников и скачайте ZIP-архив с документами</p>
+    </div>
+
+    <!-- ── Project Selector ── -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 mb-5">
+      <h2 class="text-sm font-semibold text-slate-700 mb-3">Проект / Заказчик</h2>
+      <div class="grid grid-cols-3 gap-3">
+        <!-- Option 1 — selected -->
+        <label class="flex items-start gap-3 p-4 border-2 border-blue-500 rounded-xl bg-blue-50 cursor-pointer">
+          <input type="radio" name="project" checked class="mt-0.5 accent-blue-600 flex-shrink-0">
+          <div>
+            <p class="text-sm font-semibold text-slate-800">Проект «Северный» (участок Восточный)</p>
+            <p class="text-[11px] text-slate-500">АО «ПримерШельфСервис»</p>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="text-[11px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">18 сотрудников</span>
+            </div>
+          </div>
+        </label>
+        <!-- Option 2 -->
+        <label class="flex items-start gap-3 p-4 border border-slate-200 rounded-xl hover:border-slate-300 cursor-pointer hover:bg-slate-50 transition-colors">
+          <input type="radio" name="project" class="mt-0.5 accent-blue-600 flex-shrink-0">
+          <div>
+            <p class="text-sm font-semibold text-slate-800">Проект «Южный»</p>
+            <p class="text-[11px] text-slate-500">ООО «ЮжШельфЭнерджи»</p>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">14 сотрудников</span>
+            </div>
+          </div>
+        </label>
+        <!-- Option 3 -->
+        <label class="flex items-start gap-3 p-4 border border-slate-200 rounded-xl hover:border-slate-300 cursor-pointer hover:bg-slate-50 transition-colors">
+          <input type="radio" name="project" class="mt-0.5 accent-blue-600 flex-shrink-0">
+          <div>
+            <p class="text-sm font-semibold text-slate-800">ОсновнойЗаказчик-Нефтегаз</p>
+            <p class="text-[11px] text-slate-500">ПАО «НК «Роснефть»</p>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">10 сотрудников</span>
+            </div>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <!-- ── Two-column: Employees + Preview ── -->
+    <div class="grid grid-cols-5 gap-5">
+
+      <!-- Left: Employee Checklist (2/5) -->
+      <div class="col-span-2">
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-800">Сотрудники — Проект «Северный» (участок Восточный)</h2>
+              <p class="text-[11px] text-slate-500 mt-0.5">Выбрано: 4 из 18</p>
+            </div>
+            <button class="text-xs text-blue-600 hover:text-blue-800 font-medium">Выбрать всех</button>
+          </div>
+
+          <!-- Search -->
+          <div class="px-4 py-3 border-b border-slate-100">
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+              <input type="text" placeholder="Поиск по ФИО..." class="w-full pl-8 pr-3 py-2 text-xs border border-slate-200 rounded-lg bg-slate-50 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-400">
+            </div>
+          </div>
+
+          <div class="divide-y divide-slate-50 overflow-y-auto" style="max-height:440px">
+
+            <!-- Grigorenko — selected, has issues -->
+            <label class="emp-row selected">
+              <input type="checkbox" checked>
+              <div class="w-7 h-7 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-[10px] font-bold text-red-700">ГД</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-slate-800 truncate">Иванов И.И.</p>
+                <div class="flex items-center gap-1.5 mt-1">
+                  <div class="progress-mini flex-1" style="width:80px"><div class="progress-fill bg-red-400" style="width:67%"></div></div>
+                  <span class="text-[10px] font-bold text-red-600">67%</span>
+                </div>
+              </div>
+              <div class="flex gap-0.5 flex-shrink-0">
+                <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              </div>
+            </label>
+
+            <!-- Chaliy — selected, mostly ok -->
+            <label class="emp-row selected">
+              <input type="checkbox" checked>
+              <div class="w-7 h-7 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-[10px] font-bold text-amber-700">ЧА</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-slate-800 truncate">Петров П.П.</p>
+                <div class="flex items-center gap-1.5 mt-1">
+                  <div class="progress-mini flex-1" style="width:80px"><div class="progress-fill bg-amber-400" style="width:83%"></div></div>
+                  <span class="text-[10px] font-bold text-amber-600">83%</span>
+                </div>
+              </div>
+              <div class="flex gap-0.5 flex-shrink-0">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+              </div>
+            </label>
+
+            <!-- Zaytsev — selected, all ok -->
+            <label class="emp-row selected">
+              <input type="checkbox" checked>
+              <div class="w-7 h-7 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-[10px] font-bold text-green-700">ЗВ</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-slate-800 truncate">Зайцев В.О.</p>
+                <div class="flex items-center gap-1.5 mt-1">
+                  <div class="progress-mini flex-1" style="width:80px"><div class="progress-fill bg-green-500" style="width:100%"></div></div>
+                  <span class="text-[10px] font-bold text-green-600">100%</span>
+                </div>
+              </div>
+              <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
+            </label>
+
+            <!-- Ryabov — selected, issues -->
+            <label class="emp-row selected">
+              <input type="checkbox" checked>
+              <div class="w-7 h-7 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-[10px] font-bold text-red-700">РЕ</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-slate-800 truncate">Сидоров С.С.</p>
+                <div class="flex items-center gap-1.5 mt-1">
+                  <div class="progress-mini flex-1" style="width:80px"><div class="progress-fill bg-red-400" style="width:58%"></div></div>
+                  <span class="text-[10px] font-bold text-red-600">58%</span>
+                </div>
+              </div>
+              <div class="flex gap-0.5 flex-shrink-0">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span class="w-2 h-2 rounded-full bg-slate-300"></span>
+              </div>
+            </label>
+
+            <!-- Morozov — not selected -->
+            <label class="emp-row">
+              <input type="checkbox">
+              <div class="w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-[10px] font-bold text-slate-600">МА</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-slate-600 truncate">Морозов А.В.</p>
+                <div class="flex items-center gap-1.5 mt-1">
+                  <div class="progress-mini flex-1" style="width:80px"><div class="progress-fill bg-green-400" style="width:92%"></div></div>
+                  <span class="text-[10px] font-bold text-green-600">92%</span>
+                </div>
+              </div>
+              <span class="w-2 h-2 rounded-full bg-amber-400 flex-shrink-0"></span>
+            </label>
+
+            <!-- Korolev — not selected -->
+            <label class="emp-row">
+              <input type="checkbox">
+              <div class="w-7 h-7 bg-slate-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-[10px] font-bold text-slate-600">КВ</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-slate-600 truncate">Королёв В.С.</p>
+                <div class="flex items-center gap-1.5 mt-1">
+                  <div class="progress-mini flex-1" style="width:80px"><div class="progress-fill bg-green-500" style="width:100%"></div></div>
+                  <span class="text-[10px] font-bold text-green-600">100%</span>
+                </div>
+              </div>
+              <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
+            </label>
+
+            <div class="px-4 py-3 text-center">
+              <button class="text-xs text-slate-500 hover:text-slate-700">Показать ещё 12 сотрудников ›</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Archive Preview (3/5) -->
+      <div class="col-span-3 space-y-4">
+
+        <!-- Summary Banner -->
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+          <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5"></i>
+          <div>
+            <p class="text-sm font-semibold text-amber-800">Архив не полный — у 2 сотрудников есть проблемы</p>
+            <p class="text-xs text-amber-700 mt-0.5">Иванов И.И.: 2 документа просрочены, 1 отсутствует. Сидоров С.С.: медосмотр истекает через 7 дней.</p>
+          </div>
+        </div>
+
+        <!-- Preview -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h2 class="text-sm font-semibold text-slate-800">Предпросмотр архива</h2>
+              <p class="text-[11px] text-slate-500 mt-0.5">Будет сформирован ZIP по требованиям АО «ПримерШельфСервис»</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs font-bold text-slate-700">46 файлов</p>
+              <p class="text-[11px] text-slate-400">~38 МБ</p>
+            </div>
+          </div>
+
+          <div class="divide-y divide-slate-100 overflow-y-auto" style="max-height:320px">
+
+            <!-- Grigorenko section -->
+            <div>
+              <div class="px-5 py-2.5 bg-slate-50 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-5 h-5 bg-red-100 rounded flex items-center justify-center">
+                    <span class="text-[8px] font-bold text-red-700">ГД</span>
+                  </div>
+                  <span class="text-xs font-semibold text-slate-700">Иванов Иван Иванович</span>
+                </div>
+                <span class="text-[11px] font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full">⚠ Проблемы</span>
+              </div>
+              <div class="px-5 py-1 space-y-0.5">
+                <div class="doc-row-ok flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-700"><i class="fa-regular fa-file-pdf text-red-400 mr-1.5"></i>Диплом о высшем образовании.pdf</span>
+                  <span class="text-green-600 font-medium">✅</span>
+                </div>
+                <div class="doc-row-err flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-700"><i class="fa-regular fa-file-pdf text-red-400 mr-1.5"></i>Пром. безопасность А1.pdf</span>
+                  <span class="text-red-600 font-bold">❌ Просрочен</span>
+                </div>
+                <div class="doc-row-ok flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-700"><i class="fa-regular fa-file-pdf text-red-400 mr-1.5"></i>Пром. безопасность Б2.1–Б9.3 (5 файлов)</span>
+                  <span class="text-green-600 font-medium">✅</span>
+                </div>
+                <div class="doc-row-warn flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-700"><i class="fa-regular fa-file-pdf text-red-400 mr-1.5"></i>Охрана труда.pdf</span>
+                  <span class="text-amber-600 font-bold">⚠ Истекает</span>
+                </div>
+                <div class="doc-row-ok flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-700"><i class="fa-regular fa-file-pdf text-red-400 mr-1.5"></i>Пожарная безопасность.pdf</span>
+                  <span class="text-green-600 font-medium">✅</span>
+                </div>
+                <div class="doc-row-err flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-700"><i class="fa-regular fa-file-pdf text-red-400 mr-1.5"></i>Медосмотр Крайний Север.pdf</span>
+                  <span class="text-red-600 font-bold">❌ Просрочен</span>
+                </div>
+                <div class="doc-row-miss flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-500 italic"><i class="fa-regular fa-file text-slate-300 mr-1.5"></i>ГНВП (контроль скважины)</span>
+                  <span class="text-slate-400 font-bold">❓ Отсутствует</span>
+                </div>
+                <div class="doc-row-ok flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-700"><i class="fa-regular fa-file-pdf text-red-400 mr-1.5"></i>Инструктаж СИЗ.pdf</span>
+                  <span class="text-green-600 font-medium">✅</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chaliy section -->
+            <div>
+              <div class="px-5 py-2.5 bg-slate-50 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-5 h-5 bg-amber-100 rounded flex items-center justify-center">
+                    <span class="text-[8px] font-bold text-amber-700">ЧА</span>
+                  </div>
+                  <span class="text-xs font-semibold text-slate-700">Петров Пётр Петрович</span>
+                </div>
+                <span class="text-[11px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">⚠ Неполный</span>
+              </div>
+              <div class="px-5 py-1 space-y-0.5">
+                <div class="doc-row-ok flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-700"><i class="fa-regular fa-file-pdf text-red-400 mr-1.5"></i>Пром. безопасность А1, Б2.1–Б9.3 (6 файлов)</span>
+                  <span class="text-green-600 font-medium">✅</span>
+                </div>
+                <div class="doc-row-warn flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-700"><i class="fa-regular fa-file-pdf text-red-400 mr-1.5"></i>Медосмотр Крайний Север.pdf</span>
+                  <span class="text-amber-600 font-bold">⚠ Истекает</span>
+                </div>
+                <div class="doc-row-miss flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-500 italic"><i class="fa-regular fa-file text-slate-300 mr-1.5"></i>ГНВП (контроль скважины)</span>
+                  <span class="text-slate-400 font-bold">❓ Отсутствует</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Zaytsev section -->
+            <div>
+              <div class="px-5 py-2.5 bg-slate-50 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-5 h-5 bg-green-100 rounded flex items-center justify-center">
+                    <span class="text-[8px] font-bold text-green-700">ЗВ</span>
+                  </div>
+                  <span class="text-xs font-semibold text-slate-700">Зайцев Вадим Олегович</span>
+                </div>
+                <span class="text-[11px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">✅ Готов</span>
+              </div>
+              <div class="px-5 py-1">
+                <div class="doc-row-ok flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-700"><i class="fa-regular fa-file-pdf text-red-400 mr-1.5"></i>Все 12 документов в порядке</span>
+                  <span class="text-green-600 font-medium">✅ 12/12</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ryabov section -->
+            <div>
+              <div class="px-5 py-2.5 bg-slate-50 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <div class="w-5 h-5 bg-red-100 rounded flex items-center justify-center">
+                    <span class="text-[8px] font-bold text-red-700">РЕ</span>
+                  </div>
+                  <span class="text-xs font-semibold text-slate-700">Сидоров Семён Сергеевич</span>
+                </div>
+                <span class="text-[11px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">⚠ Проблемы</span>
+              </div>
+              <div class="px-5 py-1 space-y-0.5 pb-2">
+                <div class="doc-row-warn flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-700"><i class="fa-regular fa-file-pdf text-red-400 mr-1.5"></i>Медосмотр Крайний Север.pdf</span>
+                  <span class="text-amber-600 font-bold">⚠ 7 дней</span>
+                </div>
+                <div class="doc-row-miss flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-500 italic"><i class="fa-regular fa-file text-slate-300 mr-1.5"></i>ГНВП (контроль скважины)</span>
+                  <span class="text-slate-400 font-bold">❓ Отсутствует</span>
+                </div>
+                <div class="doc-row-miss flex items-center justify-between py-1.5 px-2 rounded text-xs">
+                  <span class="text-slate-500 italic"><i class="fa-regular fa-file text-slate-300 mr-1.5"></i>Пожарная безопасность</span>
+                  <span class="text-slate-400 font-bold">❓ Отсутствует</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Password + Download -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <h2 class="text-sm font-semibold text-slate-800 mb-4">Параметры скачивания</h2>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                <i class="fa-solid fa-lock text-slate-400 mr-1"></i> Пароль на ZIP-архив
+              </label>
+              <div class="relative">
+                <input type="password" value="Sakhalin2026!" class="w-full pr-10 pl-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+                <button class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                  <i class="fa-regular fa-eye text-sm"></i>
+                </button>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1.5">Передайте пароль заказчику отдельно от архива</p>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1.5">
+                <i class="fa-solid fa-tag text-slate-400 mr-1"></i> Имя архива
+              </label>
+              <input type="text" value="Проект_Северный_26.05.2026.zip" class="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg bg-slate-50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
+            </div>
+          </div>
+
+          <!-- Download options -->
+          <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+            <div class="flex items-center gap-3">
+              <label class="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                <input type="checkbox" checked class="accent-blue-600"> Включить неполные документы
+              </label>
+              <label class="flex items-center gap-2 text-xs text-slate-600 cursor-pointer">
+                <input type="checkbox" class="accent-blue-600"> Только готовые сотрудники
+              </label>
+            </div>
+            <div class="flex items-center gap-3">
+              <button class="text-sm text-slate-600 px-4 py-2.5 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2">
+                <i class="fa-regular fa-envelope text-slate-400"></i> Отправить на e-mail
+              </button>
+              <button class="text-sm text-white bg-[#1e3a6e] hover:bg-[#152a4e] px-6 py-2.5 rounded-lg font-semibold flex items-center gap-2 transition-colors shadow-sm">
+                <i class="fa-solid fa-download text-xs"></i> Скачать архив ZIP
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Archive History -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <h2 class="text-sm font-semibold text-slate-800 mb-3">История архивов</h2>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg text-xs">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-file-zipper text-slate-400"></i>
+                <div>
+                  <p class="font-medium text-slate-700">Проект_Северный_18.04.2026.zip</p>
+                  <p class="text-slate-400">18 апреля 2026 · 34 МБ · 4 сотрудника</p>
+                </div>
+              </div>
+              <button class="text-blue-600 hover:text-blue-800 px-3 py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-download text-[10px]"></i> Скачать
+              </button>
+            </div>
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg text-xs">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-file-zipper text-slate-400"></i>
+                <div>
+                  <p class="font-medium text-slate-700">Проект_Северный_05.03.2026.zip</p>
+                  <p class="text-slate-400">5 марта 2026 · 29 МБ · 3 сотрудника</p>
+                </div>
+              </div>
+              <button class="text-blue-600 hover:text-blue-800 px-3 py-1.5 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-download text-[10px]"></i> Скачать
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ru">
+<!--
+  Экран: Карточка сотрудника — Иванов И.И.
+  Полный список разрешительных документов сотрудника: тип, дата выдачи, срок
+  действия, статус-бейдж. Кнопки загрузки/просмотра каждого документа и формирования архива.
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PermitFlow — Иванов И.И.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .nav-link { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; font-size:14px; font-weight:500; color:#94a3b8; transition:all .15s; text-decoration:none; }
+    .nav-link:hover { background:rgba(255,255,255,.08); color:#fff; }
+    .nav-link.active { background:rgba(255,255,255,.13); color:#fff; }
+    .nav-link.active i { color:#f97316; }
+    .badge-ok    { background:#dcfce7; color:#15803d; border:1px solid #bbf7d0; }
+    .badge-warn  { background:#fef3c7; color:#92400e; border:1px solid #fde68a; }
+    .badge-danger{ background:#fee2e2; color:#991b1b; border:1px solid #fecaca; }
+    .badge-miss  { background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; }
+    tr:hover td { background:#f8fafc; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="w-60 bg-[#0d1f3c] text-white flex flex-col min-h-screen fixed left-0 top-0 z-40">
+    <div class="px-5 py-5 border-b border-white/10">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+          <i class="fa-solid fa-file-shield text-white text-sm"></i>
+        </div>
+        <span class="text-[17px] font-bold tracking-tight">PermitFlow</span>
+      </div>
+      <p class="text-[11px] text-slate-400 mt-1.5 leading-tight">ООО «ПермитФлоу Сервис»</p>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-0.5">
+      <a href="dashboard.html" class="nav-link">
+        <i class="fa-solid fa-gauge w-4 text-center"></i> Дашборд
+      </a>
+      <a href="employees.html" class="nav-link active">
+        <i class="fa-solid fa-users w-4 text-center"></i> Сотрудники
+      </a>
+      <a href="upload.html" class="nav-link">
+        <i class="fa-solid fa-cloud-arrow-up w-4 text-center"></i> Загрузка документов
+      </a>
+      <a href="archive.html" class="nav-link">
+        <i class="fa-solid fa-box-archive w-4 text-center"></i> Архивы
+      </a>
+      <div class="pt-3 mt-3 border-t border-white/10">
+        <a href="#" class="nav-link">
+          <i class="fa-solid fa-gear w-4 text-center"></i> Настройки
+        </a>
+      </div>
+    </nav>
+    <div class="px-4 py-4 border-t border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">КА</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-white truncate">Козлова А.П.</p>
+          <p class="text-[11px] text-slate-400">Специалист по документам</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="ml-60 flex-1 p-8">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-sm text-slate-400 mb-5">
+      <a href="employees.html" class="hover:text-slate-600 transition-colors">Сотрудники</a>
+      <i class="fa-solid fa-chevron-right text-[10px]"></i>
+      <span class="text-slate-700 font-medium">Иванов И.И.</span>
+    </div>
+
+    <!-- ── Employee Header Card ── -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 mb-6">
+      <div class="flex items-start gap-5">
+        <!-- Avatar -->
+        <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md">
+          <span class="text-xl font-bold text-white">ГД</span>
+        </div>
+
+        <!-- Info -->
+        <div class="flex-1">
+          <div class="flex items-start justify-between">
+            <div>
+              <h1 class="text-xl font-bold text-slate-800">Иванов Иван Иванович</h1>
+              <p class="text-sm text-slate-500 mt-0.5">Механик по ремонту скважин &nbsp;·&nbsp; Таб. № 00147</p>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <a href="upload.html" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
+                <i class="fa-solid fa-cloud-arrow-up text-xs"></i> Загрузить документ
+              </a>
+              <a href="archive.html" class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg transition-colors shadow-sm">
+                <i class="fa-solid fa-box-archive text-xs"></i> Сформировать архив
+              </a>
+            </div>
+          </div>
+
+          <!-- Meta tags -->
+          <div class="flex flex-wrap gap-3 mt-3">
+            <div class="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg">
+              <i class="fa-solid fa-location-dot text-slate-400"></i>
+              Проект «Северный», участок Восточный
+            </div>
+            <div class="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg">
+              <i class="fa-solid fa-building text-slate-400"></i>
+              Заказчик: АО «ПримерШельфСервис»
+            </div>
+            <div class="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg">
+              <i class="fa-regular fa-calendar text-slate-400"></i>
+              В компании с 12.03.2018
+            </div>
+            <div class="flex items-center gap-1.5 text-xs text-slate-600 bg-slate-100 px-3 py-1.5 rounded-lg">
+              <i class="fa-solid fa-envelope text-slate-400"></i>
+              d.grigorenko@nss-sakhalin.ru
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status mini-stats -->
+      <div class="grid grid-cols-4 gap-3 mt-5 pt-5 border-t border-slate-100">
+        <div class="text-center">
+          <p class="text-2xl font-bold text-green-600">8</p>
+          <p class="text-xs text-slate-500 mt-0.5">В порядке</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-bold text-amber-500">1</p>
+          <p class="text-xs text-slate-500 mt-0.5">Истекает</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-bold text-red-600">2</p>
+          <p class="text-xs text-slate-500 mt-0.5">Просрочено</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-bold text-slate-400">1</p>
+          <p class="text-xs text-slate-500 mt-0.5">Отсутствует</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Documents Table ── -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h2 class="font-semibold text-slate-800">Разрешительные документы</h2>
+          <p class="text-xs text-slate-500 mt-0.5">12 документов · требования Проект «Северный» (участок Восточный)</p>
+        </div>
+        <div class="flex items-center gap-2 text-xs text-slate-500">
+          <span class="w-2 h-2 rounded-full bg-red-500 inline-block"></span> Просрочен
+          <span class="w-2 h-2 rounded-full bg-amber-400 inline-block ml-2"></span> Истекает
+          <span class="w-2 h-2 rounded-full bg-green-500 inline-block ml-2"></span> В порядке
+          <span class="w-2 h-2 rounded-full bg-slate-300 inline-block ml-2"></span> Отсутствует
+        </div>
+      </div>
+
+      <table class="w-full">
+        <thead>
+          <tr class="bg-slate-50 border-b border-slate-200">
+            <th class="px-5 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Тип документа</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Дата выдачи</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Срок действия</th>
+            <th class="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide">Статус</th>
+            <th class="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wide">Документ</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+
+          <!-- 1. Диплом -->
+          <tr>
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-slate-800">Диплом о высшем образовании</p>
+              <p class="text-xs text-slate-400">ДВГТУ, специальность «Нефтегазовое дело»</p>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">15.06.2005</td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">Бессрочно</td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full badge-ok">✅ В порядке</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button class="text-xs text-slate-600 hover:text-blue-600 px-2.5 py-1.5 border border-slate-200 rounded-lg hover:border-blue-300 transition-colors flex items-center gap-1.5">
+                  <i class="fa-regular fa-eye text-xs"></i> Просмотр
+                </button>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 2. А1 — EXPIRED -->
+          <tr class="bg-red-50/40">
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-slate-800">Пром. безопасность А1</p>
+              <p class="text-xs text-slate-400">Общие требования пром. безопасности</p>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">12.03.2025</td>
+            <td class="px-4 py-3.5">
+              <p class="text-sm text-red-600 font-semibold">12.03.2026</p>
+              <p class="text-[11px] text-red-500">75 дней назад</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full badge-danger">❌ Просрочен</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button class="text-xs text-slate-500 px-2.5 py-1.5 border border-slate-200 rounded-lg flex items-center gap-1.5 hover:bg-slate-50 transition-colors">
+                  <i class="fa-regular fa-eye text-xs"></i> Просмотр
+                </button>
+                <a href="upload.html" class="text-xs text-white bg-red-500 hover:bg-red-600 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors">
+                  <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i> Заменить
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 3. Б2.1 -->
+          <tr>
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-slate-800">Пром. безопасность Б2.1</p>
+              <p class="text-xs text-slate-400">Нефтяная и газовая промышленность</p>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">15.04.2025</td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">15.04.2027</td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full badge-ok">✅ В порядке</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <button class="text-xs text-slate-600 hover:text-blue-600 px-2.5 py-1.5 border border-slate-200 rounded-lg hover:border-blue-300 transition-colors flex items-center gap-1.5 ml-auto">
+                <i class="fa-regular fa-eye text-xs"></i> Просмотр
+              </button>
+            </td>
+          </tr>
+
+          <!-- 4. Б2.2 -->
+          <tr>
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-slate-800">Пром. безопасность Б2.2</p>
+              <p class="text-xs text-slate-400">Бурение и добыча нефти, газа и газового конденсата</p>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">15.04.2025</td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">15.04.2027</td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full badge-ok">✅ В порядке</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <button class="text-xs text-slate-600 hover:text-blue-600 px-2.5 py-1.5 border border-slate-200 rounded-lg hover:border-blue-300 transition-colors flex items-center gap-1.5 ml-auto">
+                <i class="fa-regular fa-eye text-xs"></i> Просмотр
+              </button>
+            </td>
+          </tr>
+
+          <!-- 5. Б2.4 -->
+          <tr>
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-slate-800">Пром. безопасность Б2.4</p>
+              <p class="text-xs text-slate-400">Геологоразведочные работы</p>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">15.04.2025</td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">15.04.2027</td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full badge-ok">✅ В порядке</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <button class="text-xs text-slate-600 hover:text-blue-600 px-2.5 py-1.5 border border-slate-200 rounded-lg hover:border-blue-300 transition-colors flex items-center gap-1.5 ml-auto">
+                <i class="fa-regular fa-eye text-xs"></i> Просмотр
+              </button>
+            </td>
+          </tr>
+
+          <!-- 6. Б2.6 -->
+          <tr>
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-slate-800">Пром. безопасность Б2.6</p>
+              <p class="text-xs text-slate-400">Подземные сооружения</p>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">15.04.2025</td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">15.04.2027</td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full badge-ok">✅ В порядке</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <button class="text-xs text-slate-600 hover:text-blue-600 px-2.5 py-1.5 border border-slate-200 rounded-lg hover:border-blue-300 transition-colors flex items-center gap-1.5 ml-auto">
+                <i class="fa-regular fa-eye text-xs"></i> Просмотр
+              </button>
+            </td>
+          </tr>
+
+          <!-- 7. Б9.3 -->
+          <tr>
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-slate-800">Пром. безопасность Б9.3</p>
+              <p class="text-xs text-slate-400">Грузоподъёмные машины и механизмы</p>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">15.04.2025</td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">15.04.2027</td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full badge-ok">✅ В порядке</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <button class="text-xs text-slate-600 hover:text-blue-600 px-2.5 py-1.5 border border-slate-200 rounded-lg hover:border-blue-300 transition-colors flex items-center gap-1.5 ml-auto">
+                <i class="fa-regular fa-eye text-xs"></i> Просмотр
+              </button>
+            </td>
+          </tr>
+
+          <!-- 8. Охрана труда — EXPIRING -->
+          <tr class="bg-amber-50/40">
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-slate-800">Охрана труда (инструктаж)</p>
+              <p class="text-xs text-slate-400">Протокол проверки знаний ОТ, форма А-01</p>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">14.06.2025</td>
+            <td class="px-4 py-3.5">
+              <p class="text-sm text-amber-600 font-semibold">14.06.2026</p>
+              <p class="text-[11px] text-amber-500">Через 19 дней</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full badge-warn">⚠️ Истекает</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button class="text-xs text-slate-500 px-2.5 py-1.5 border border-slate-200 rounded-lg flex items-center gap-1.5 hover:bg-slate-50 transition-colors">
+                  <i class="fa-regular fa-eye text-xs"></i> Просмотр
+                </button>
+                <a href="upload.html" class="text-xs text-white bg-amber-500 hover:bg-amber-600 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors">
+                  <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i> Обновить
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 9. Пожарная безопасность -->
+          <tr>
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-slate-800">Пожарная безопасность</p>
+              <p class="text-xs text-slate-400">Удостоверение о проверке знаний по ПБ</p>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">20.11.2025</td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">20.11.2026</td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full badge-ok">✅ В порядке</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <button class="text-xs text-slate-600 hover:text-blue-600 px-2.5 py-1.5 border border-slate-200 rounded-lg hover:border-blue-300 transition-colors flex items-center gap-1.5 ml-auto">
+                <i class="fa-regular fa-eye text-xs"></i> Просмотр
+              </button>
+            </td>
+          </tr>
+
+          <!-- 10. Медосмотр — EXPIRED -->
+          <tr class="bg-red-50/40">
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-slate-800">Медосмотр — Крайний Север</p>
+              <p class="text-xs text-slate-400">Заключение ВКК, приказ № 29Н</p>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">10.05.2025</td>
+            <td class="px-4 py-3.5">
+              <p class="text-sm text-red-600 font-semibold">10.05.2026</p>
+              <p class="text-[11px] text-red-500">16 дней назад</p>
+            </td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full badge-danger">❌ Просрочен</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <button class="text-xs text-slate-500 px-2.5 py-1.5 border border-slate-200 rounded-lg flex items-center gap-1.5 hover:bg-slate-50 transition-colors">
+                  <i class="fa-regular fa-eye text-xs"></i> Просмотр
+                </button>
+                <a href="upload.html" class="text-xs text-white bg-red-500 hover:bg-red-600 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors">
+                  <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i> Заменить
+                </a>
+              </div>
+            </td>
+          </tr>
+
+          <!-- 11. ГНВП — MISSING -->
+          <tr class="bg-slate-50/60">
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-slate-800">ГНВП (контроль скважины)</p>
+              <p class="text-xs text-slate-400">Свидетельство IADC Well Control</p>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-400">—</td>
+            <td class="px-4 py-3.5 text-sm text-slate-400">—</td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full badge-miss">❓ Отсутствует</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <a href="upload.html" class="text-xs text-white bg-[#1e3a6e] hover:bg-[#152a4e] px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 ml-auto w-fit transition-colors">
+                <i class="fa-solid fa-cloud-arrow-up text-xs"></i> Загрузить
+              </a>
+            </td>
+          </tr>
+
+          <!-- 12. СИЗ -->
+          <tr>
+            <td class="px-5 py-3.5">
+              <p class="text-sm font-medium text-slate-800">Инструктаж по применению СИЗ</p>
+              <p class="text-xs text-slate-400">Протокол инструктажа, форма ОТ-07</p>
+            </td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">01.03.2026</td>
+            <td class="px-4 py-3.5 text-sm text-slate-600">01.03.2027</td>
+            <td class="px-4 py-3.5">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-full badge-ok">✅ В порядке</span>
+            </td>
+            <td class="px-4 py-3.5 text-right">
+              <button class="text-xs text-slate-600 hover:text-blue-600 px-2.5 py-1.5 border border-slate-200 rounded-lg hover:border-blue-300 transition-colors flex items-center gap-1.5 ml-auto">
+                <i class="fa-regular fa-eye text-xs"></i> Просмотр
+              </button>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+
+      <!-- Footer -->
+      <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-xs text-slate-500">
+          <i class="fa-solid fa-circle-info text-slate-400"></i>
+          Последнее обновление: 26.05.2026 в 09:14 · Козлова А.П.
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="text-sm text-slate-600 hover:text-slate-800 px-4 py-2 border border-slate-200 rounded-lg hover:bg-white transition-colors flex items-center gap-2">
+            <i class="fa-regular fa-file-pdf text-red-400"></i> Экспорт реестра
+          </button>
+          <a href="archive.html" class="text-sm text-white bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg flex items-center gap-2 transition-colors font-semibold">
+            <i class="fa-solid fa-box-archive text-xs"></i> Сформировать архив
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</body>
+</html>

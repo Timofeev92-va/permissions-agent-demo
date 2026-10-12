@@ -1,0 +1,42 @@
+[
+  {
+    "file": "diploma.pdf",
+    "engineer": "employee_b",
+    "doc_type": "Диплом",
+    "issue_date": "2012-07-01",
+    "expiry_date": null,
+    "validity_years": null,
+    "status": "OK (бессрочно)",
+    "text_snippet": "ДИПЛОМ О СРЕДНЕМ ПРОФЕССИОНАЛЬНОМ ОБРАЗОВАНИИ ..."
+  },
+  {
+    "file": "prom_bezopasnost_b21.pdf",
+    "engineer": "employee_b",
+    "doc_type": "Промышленная безопасность Б2.1",
+    "issue_date": "2022-05-24",
+    "expiry_date": "2027-05-24",
+    "validity_years": 5,
+    "status": "OK",
+    "text_snippet": "УДОСТОВЕРЕНИЕ о проверке знаний требований промышленной безопасности Б.2.1 ..."
+  },
+  {
+    "file": "ohrana_truda.pdf",
+    "engineer": "employee_b",
+    "doc_type": "Охрана труда",
+    "issue_date": "2024-06-21",
+    "expiry_date": "2025-06-21",
+    "validity_years": 1,
+    "status": "ПРОСРОЧЕН",
+    "text_snippet": "ПРОТОКОЛ проверки знаний требований охраны труда ..."
+  },
+  {
+    "file": "pozharnaya_bezopasnost.pdf",
+    "engineer": "employee_b",
+    "doc_type": "Пожарная безопасность / ПТМ",
+    "issue_date": "2022-03-10",
+    "expiry_date": "2023-03-10",
+    "validity_years": 1,
+    "status": "ПРОСРОЧЕН",
+    "text_snippet": "УДОСТОВЕРЕНИЕ о прохождении пожарно-технического минимума ..."
+  }
+]

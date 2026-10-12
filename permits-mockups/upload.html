@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ru">
+<!--
+  Экран: Загрузка документа
+  Дропзона для PDF/JPG с автораспознаванием дат через OCR (имитация),
+  форма привязки к сотруднику и типу документа, превью файла справа.
+-->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PermitFlow — Загрузка документа</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .nav-link { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; font-size:14px; font-weight:500; color:#94a3b8; transition:all .15s; text-decoration:none; }
+    .nav-link:hover { background:rgba(255,255,255,.08); color:#fff; }
+    .nav-link.active { background:rgba(255,255,255,.13); color:#fff; }
+    .nav-link.active i { color:#f97316; }
+    .dropzone { border: 2px dashed #cbd5e1; border-radius: 12px; transition: all .2s; }
+    .dropzone:hover, .dropzone.over { border-color: #3b82f6; background: #eff6ff; }
+    .field-label { display:block; font-size:12px; font-weight:600; color:#475569; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
+    .field-input { width:100%; padding:9px 13px; font-size:14px; border:1px solid #e2e8f0; border-radius:8px; background:#fff; color:#1e293b; outline:none; transition:border-color .15s, box-shadow .15s; }
+    .field-input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.12); }
+    .field-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%236b7280' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; }
+    .ocr-badge { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; color:#7c3aed; background:#f3e8ff; border:1px solid #e9d5ff; padding:3px 8px; border-radius:20px; }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="w-60 bg-[#0d1f3c] text-white flex flex-col min-h-screen fixed left-0 top-0 z-40">
+    <div class="px-5 py-5 border-b border-white/10">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center flex-shrink-0">
+          <i class="fa-solid fa-file-shield text-white text-sm"></i>
+        </div>
+        <span class="text-[17px] font-bold tracking-tight">PermitFlow</span>
+      </div>
+      <p class="text-[11px] text-slate-400 mt-1.5 leading-tight">ООО «ПермитФлоу Сервис»</p>
+    </div>
+    <nav class="flex-1 px-3 py-4 space-y-0.5">
+      <a href="dashboard.html" class="nav-link">
+        <i class="fa-solid fa-gauge w-4 text-center"></i> Дашборд
+      </a>
+      <a href="employees.html" class="nav-link">
+        <i class="fa-solid fa-users w-4 text-center"></i> Сотрудники
+      </a>
+      <a href="upload.html" class="nav-link active">
+        <i class="fa-solid fa-cloud-arrow-up w-4 text-center"></i> Загрузка документов
+      </a>
+      <a href="archive.html" class="nav-link">
+        <i class="fa-solid fa-box-archive w-4 text-center"></i> Архивы
+      </a>
+      <div class="pt-3 mt-3 border-t border-white/10">
+        <a href="#" class="nav-link">
+          <i class="fa-solid fa-gear w-4 text-center"></i> Настройки
+        </a>
+      </div>
+    </nav>
+    <div class="px-4 py-4 border-t border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0">КА</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-white truncate">Козлова А.П.</p>
+          <p class="text-[11px] text-slate-400">Специалист по документам</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <main class="ml-60 flex-1 p-8">
+
+    <!-- Breadcrumb + Header -->
+    <div class="flex items-center gap-2 text-sm text-slate-400 mb-2">
+      <a href="dashboard.html" class="hover:text-slate-600">Дашборд</a>
+      <i class="fa-solid fa-chevron-right text-[10px]"></i>
+      <span class="text-slate-700 font-medium">Загрузка документа</span>
+    </div>
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-slate-800">Загрузка документа</h1>
+        <p class="text-sm text-slate-500 mt-1">Поддерживаются PDF, JPG, PNG. Даты распознаются автоматически.</p>
+      </div>
+    </div>
+
+    <!-- ── Two-column layout ── -->
+    <div class="grid grid-cols-5 gap-6">
+
+      <!-- Left: Form (3/5) -->
+      <div class="col-span-3 space-y-5">
+
+        <!-- Dropzone -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+          <h2 class="text-sm font-semibold text-slate-700 mb-4">Файл документа</h2>
+
+          <!-- Dropzone — state: file loaded -->
+          <div class="dropzone p-6 flex flex-col items-center justify-center text-center bg-blue-50/50 border-blue-300">
+            <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-3">
+              <i class="fa-regular fa-file-pdf text-2xl text-blue-600"></i>
+            </div>
+            <p class="text-sm font-semibold text-blue-700">grigorenko_med_2026.pdf</p>
+            <p class="text-xs text-slate-500 mt-1">PDF · 1.4 МБ · загружен</p>
+            <div class="flex items-center gap-3 mt-4">
+              <button class="text-xs text-slate-500 hover:text-red-600 border border-slate-200 px-3 py-1.5 rounded-lg hover:border-red-200 transition-colors flex items-center gap-1.5">
+                <i class="fa-regular fa-trash-can text-xs"></i> Удалить
+              </button>
+              <button class="text-xs text-blue-600 border border-blue-200 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors flex items-center gap-1.5">
+                <i class="fa-solid fa-arrow-up-from-bracket text-xs"></i> Заменить файл
+              </button>
+            </div>
+          </div>
+
+          <!-- Drop hint (empty state) — commented out, shown for reference -->
+          <!--
+          <div class="dropzone p-10 flex flex-col items-center justify-center text-center cursor-pointer">
+            <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-300 mb-3"></i>
+            <p class="text-sm font-semibold text-slate-600">Перетащите файл сюда</p>
+            <p class="text-xs text-slate-400 mt-1">или нажмите для выбора</p>
+            <p class="text-xs text-slate-300 mt-3">PDF, JPG, PNG · до 20 МБ</p>
+          </div>
+          -->
+
+          <!-- OCR Progress -->
+          <div class="mt-4 p-3.5 bg-purple-50 border border-purple-200 rounded-xl flex items-center gap-3">
+            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-wand-magic-sparkles text-purple-600 text-sm"></i>
+            </div>
+            <div class="flex-1">
+              <p class="text-xs font-semibold text-purple-800">OCR-распознавание завершено</p>
+              <p class="text-[11px] text-purple-600 mt-0.5">Найдено 2 даты: дата выдачи и срок действия. Заполнено автоматически.</p>
+            </div>
+            <span class="text-[11px] font-bold text-green-700 bg-green-100 px-2 py-1 rounded-full flex-shrink-0">✓ Готово</span>
+          </div>
+        </div>
+
+        <!-- Form Fields -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+          <h2 class="text-sm font-semibold text-slate-700 mb-5">Данные документа</h2>
+
+          <div class="space-y-4">
+
+            <!-- Тип документа -->
+            <div>
+              <label class="field-label">Тип документа <span class="text-red-500">*</span></label>
+              <select class="field-input field-select text-slate-800">
+                <option value="" disabled>Выберите тип...</option>
+                <optgroup label="Промышленная безопасность">
+                  <option>Пром. безопасность А1</option>
+                  <option>Пром. безопасность Б2.1</option>
+                  <option>Пром. безопасность Б2.2</option>
+                  <option>Пром. безопасность Б2.4</option>
+                  <option>Пром. безопасность Б2.6</option>
+                  <option>Пром. безопасность Б9.3</option>
+                </optgroup>
+                <optgroup label="Медицина и охрана труда">
+                  <option selected>Медосмотр — Крайний Север</option>
+                  <option>Охрана труда (инструктаж)</option>
+                  <option>Пожарная безопасность</option>
+                  <option>Инструктаж по СИЗ</option>
+                </optgroup>
+                <optgroup label="Специальные">
+                  <option>ГНВП (контроль скважины)</option>
+                  <option>Водительское удостоверение</option>
+                  <option>Диплом о высшем образовании</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <!-- Сотрудник -->
+            <div>
+              <label class="field-label">Сотрудник <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                <input type="text" value="Иванов Иван Иванович" class="field-input pl-8 text-slate-800">
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1.5">Таб. № 00147 · Механик по ремонту скважин · Проект «Северный» (участок Восточный)</p>
+            </div>
+
+            <!-- Даты — row -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="field-label">
+                  Дата выдачи <span class="text-red-500">*</span>
+                  <span class="ocr-badge ml-1.5 normal-case tracking-normal">
+                    <i class="fa-solid fa-wand-magic-sparkles text-[9px]"></i> OCR
+                  </span>
+                </label>
+                <input type="text" value="10.05.2026" class="field-input border-purple-300 bg-purple-50/50 text-slate-800">
+                <p class="text-[11px] text-purple-600 mt-1.5 flex items-center gap-1">
+                  <i class="fa-solid fa-circle-check text-[10px]"></i> Распознано автоматически
+                </p>
+              </div>
+              <div>
+                <label class="field-label">
+                  Срок действия
+                  <span class="ocr-badge ml-1.5 normal-case tracking-normal">
+                    <i class="fa-solid fa-wand-magic-sparkles text-[9px]"></i> OCR
+                  </span>
+                </label>
+                <input type="text" value="10.05.2027" class="field-input border-purple-300 bg-purple-50/50 text-slate-800">
+                <p class="text-[11px] text-purple-600 mt-1.5 flex items-center gap-1">
+                  <i class="fa-solid fa-circle-check text-[10px]"></i> Распознано автоматически
+                </p>
+              </div>
+            </div>
+
+            <!-- Выдавшая организация -->
+            <div>
+              <label class="field-label">Выдавшая организация</label>
+              <input type="text" value="ГБУЗ «Областная больница № 1»" class="field-input text-slate-800">
+            </div>
+
+            <!-- Номер документа -->
+            <div>
+              <label class="field-label">Номер документа</label>
+              <input type="text" placeholder="Напр. МК-2026/04821" class="field-input text-slate-800">
+            </div>
+
+            <!-- Примечание -->
+            <div>
+              <label class="field-label">Примечание</label>
+              <textarea rows="2" placeholder="Дополнительная информация..." class="field-input resize-none text-slate-800" style="line-height:1.5"></textarea>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-between">
+          <a href="employee_detail.html" class="text-sm text-slate-500 hover:text-slate-700 px-5 py-2.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 transition-colors">
+            Отмена
+          </a>
+          <div class="flex items-center gap-3">
+            <button class="text-sm text-slate-700 px-5 py-2.5 border border-slate-200 rounded-lg bg-white hover:bg-slate-50 transition-colors">
+              Сохранить черновик
+            </button>
+            <button class="text-sm text-white bg-orange-500 hover:bg-orange-600 px-6 py-2.5 rounded-lg font-semibold transition-colors shadow-sm flex items-center gap-2">
+              <i class="fa-solid fa-floppy-disk text-xs"></i> Сохранить документ
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right: Preview (2/5) -->
+      <div class="col-span-2 space-y-4">
+
+        <!-- Document Preview -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden sticky top-8">
+          <div class="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-slate-700">Превью документа</h3>
+            <button class="text-xs text-slate-500 hover:text-blue-600 flex items-center gap-1.5">
+              <i class="fa-solid fa-up-right-and-down-left-from-center text-[10px]"></i> На весь экран
+            </button>
+          </div>
+
+          <!-- PDF Preview Placeholder -->
+          <div class="bg-slate-700 mx-4 my-4 rounded-lg overflow-hidden shadow-inner" style="aspect-ratio:0.707">
+            <!-- Simulated PDF page -->
+            <div class="w-full h-full bg-white flex flex-col p-6 relative">
+              <!-- Header of fake document -->
+              <div class="flex items-start justify-between mb-4">
+                <div>
+                  <div class="w-16 h-5 bg-slate-800 rounded mb-1"></div>
+                  <div class="w-24 h-3 bg-slate-400 rounded"></div>
+                </div>
+                <div class="w-10 h-10 bg-slate-200 rounded"></div>
+              </div>
+
+              <div class="text-center mb-4">
+                <div class="h-3 bg-slate-800 rounded mx-4 mb-1.5"></div>
+                <div class="h-2.5 bg-slate-500 rounded mx-8 mb-1"></div>
+                <div class="h-2.5 bg-slate-500 rounded mx-12"></div>
+              </div>
+
+              <!-- Body lines -->
+              <div class="space-y-1.5 flex-1">
+                <div class="h-2 bg-slate-200 rounded w-full"></div>
+                <div class="h-2 bg-slate-200 rounded w-5/6"></div>
+                <div class="h-2 bg-slate-200 rounded w-full"></div>
+                <div class="h-2 bg-slate-200 rounded w-4/5"></div>
+                <div class="h-2 bg-slate-200 rounded w-full"></div>
+                <div class="h-2 bg-slate-200 rounded w-3/4"></div>
+                <div class="h-2 bg-slate-200 rounded w-full mt-3"></div>
+                <div class="h-2 bg-slate-200 rounded w-full"></div>
+                <div class="h-2 bg-slate-200 rounded w-5/6"></div>
+              </div>
+
+              <!-- OCR highlights -->
+              <div class="mt-4 border border-slate-200 rounded p-2">
+                <div class="flex justify-between items-center">
+                  <div>
+                    <div class="h-2 bg-slate-300 rounded w-20 mb-1"></div>
+                    <div class="h-3 bg-purple-300 rounded w-24 ring-1 ring-purple-400"></div>
+                  </div>
+                  <div>
+                    <div class="h-2 bg-slate-300 rounded w-16 mb-1"></div>
+                    <div class="h-3 bg-purple-300 rounded w-24 ring-1 ring-purple-400"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Signature area -->
+              <div class="flex justify-between items-end mt-4">
+                <div class="w-24">
+                  <div class="h-px bg-slate-400 w-full mb-1"></div>
+                  <div class="h-2 bg-slate-200 rounded"></div>
+                </div>
+                <div class="w-10 h-10 rounded-full border border-dashed border-slate-400 flex items-center justify-center">
+                  <div class="w-6 h-6 rounded-full border border-slate-300"></div>
+                </div>
+              </div>
+
+              <!-- OCR annotation -->
+              <div class="absolute top-2 right-2">
+                <span class="text-[9px] font-bold bg-purple-600 text-white px-1.5 py-0.5 rounded">OCR</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="px-5 pb-4 flex items-center justify-between text-xs text-slate-500">
+            <span>Страница 1 из 1</span>
+            <div class="flex items-center gap-2">
+              <button class="px-2 py-1 border border-slate-200 rounded hover:bg-slate-50">‹</button>
+              <button class="px-2 py-1 border border-slate-200 rounded hover:bg-slate-50">›</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- OCR Result Card -->
+        <div class="bg-purple-50 border border-purple-200 rounded-xl p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <i class="fa-solid fa-wand-magic-sparkles text-purple-600 text-sm"></i>
+            <p class="text-sm font-semibold text-purple-800">Распознано OCR</p>
+          </div>
+          <div class="space-y-2">
+            <div class="flex justify-between text-xs">
+              <span class="text-purple-700 font-medium">Дата выдачи:</span>
+              <span class="text-purple-900 font-bold bg-purple-100 px-2 py-0.5 rounded">10.05.2026</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-purple-700 font-medium">Срок действия:</span>
+              <span class="text-purple-900 font-bold bg-purple-100 px-2 py-0.5 rounded">10.05.2027</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-purple-700 font-medium">Тип документа:</span>
+              <span class="text-purple-900 font-bold bg-purple-100 px-2 py-0.5 rounded">Медосмотр</span>
+            </div>
+          </div>
+          <p class="text-[10px] text-purple-500 mt-3">Проверьте данные перед сохранением. При необходимости отредактируйте вручную.</p>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</body>
+</html>

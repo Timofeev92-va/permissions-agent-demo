@@ -1,0 +1,42 @@
+[
+  {
+    "file": "diploma.pdf",
+    "engineer": "employee_a",
+    "doc_type": "Диплом",
+    "issue_date": "2010-06-15",
+    "expiry_date": null,
+    "validity_years": null,
+    "status": "OK (бессрочно)",
+    "text_snippet": "ДИПЛОМ О ВЫСШЕМ ОБРАЗОВАНИИ ... специальность: бурение нефтяных и газовых скважин ..."
+  },
+  {
+    "file": "prom_bezopasnost_a1.pdf",
+    "engineer": "employee_a",
+    "doc_type": "Промышленная безопасность А1",
+    "issue_date": "2023-06-15",
+    "expiry_date": "2028-06-15",
+    "validity_years": 5,
+    "status": "OK",
+    "text_snippet": "УДОСТОВЕРЕНИЕ о проверке знаний требований промышленной безопасности А.1 ..."
+  },
+  {
+    "file": "gnvp.pdf",
+    "engineer": "employee_a",
+    "doc_type": "ГНВП / Контроль скважины",
+    "issue_date": "2024-06-01",
+    "expiry_date": "2026-06-01",
+    "validity_years": 2,
+    "status": "ИСТЕКАЕТ ЧЕРЕЗ 45 дн.",
+    "text_snippet": "СВИДЕТЕЛЬСТВО о прохождении обучения по контролю скважины при ГНВП ..."
+  },
+  {
+    "file": "medosmotr.pdf",
+    "engineer": "employee_a",
+    "doc_type": "Медицинский осмотр",
+    "issue_date": "2025-06-20",
+    "expiry_date": "2026-06-20",
+    "validity_years": 1,
+    "status": "ИСТЕКАЕТ ЧЕРЕЗ 64 дн.",
+    "text_snippet": "ЗАКЛЮЧЕНИЕ медицинской комиссии о допуске к работам в районах Крайнего Севера ..."
+  }
+]
